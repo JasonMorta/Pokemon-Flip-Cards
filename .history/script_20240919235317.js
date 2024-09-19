@@ -95,9 +95,9 @@ async function fetchPokemon() {
         });
 
         // Add mouse leave event to flip the card back to front
-        cardOuter.addEventListener('mouseleave', () => {
-            pokemonCard.classList.remove('flip-card'); // Flip back on mouse leave
-        });
+        // cardOuter.addEventListener('mouseleave', () => {
+        //     pokemonCard.classList.remove('flip-card'); // Flip back on mouse leave
+        // });
     }
 }
 

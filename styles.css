@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Silkscreen:wght@400;700&display=swap');
+
 body {
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -26,7 +29,8 @@ body {
     border-radius: 10px;
 }
 
-.card-front, .card-back {
+.card-front,
+.card-back {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -45,16 +49,37 @@ body {
     box-shadow: 0 3px 7px 0 rgba(0, 0, 0, .13), 0 1px 2px 0 rgba(0, 0, 0, .11);
 }
 
+.card-front img {
+    z-index: 2;
+    position: relative;
+    width: 200px;
+}
+
+.card-front::before {
+    content: "";
+    position: absolute;
+    width: 170px;
+    height: 170px;
+    border-radius: 50%;
+    left: 50%;
+    z-index: 1;
+    top: 44%;
+    transform: translate(-50%, -50%);
+    background: rgb(255 255 255 / 59%);
+}
+
 .card-back {
     justify-content: flex-start;
     color: white;
-    transform: rotateY(180deg); /* Rotate back side */
+    transform: rotateY(180deg);
+    /* Rotate back side */
     box-shadow: 0 26px 58px 0 rgba(0, 0, 0, .22), 0 5px 14px 0 rgba(0, 0, 0, .18);
 }
 
 .flip-card {
-    transform: rotateY(180deg); /* Flip the card */
-    
+    transform: rotateY(180deg);
+    /* Flip the card */
+
 
 }
 
@@ -63,6 +88,48 @@ body {
 .pokemon-stats {
     text-align: center;
     margin: 5px 0;
+}
+
+h1 {
+    font-family: "Silkscreen", sans-serif;
+    width: 100%;
+    text-align: center;
+}
+
+.pokemon-name h3 {
+    margin: 0;
+    width: 100%;
+    padding-top: 10px;
+    font-family: "Silkscreen", sans-serif;
+    font-weight: 400;
+    font-size: medium;
+    color: #ffffff;
+}
+
+
+.pokemon-name {
+    position: relative;
+}
+
+.pokemon-name::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 2px;
+    border-radius: 10px;
+    background: #ffffff79;
+    z-index: 0;
+}
+
+.pokemon-number p {
+    background-color: #0000001a;
+    border-radius: 20px;
+    padding: 1px 5px;
+    margin: 0;
+    font-size: 0.6em;
 }
 
 .pokemon-stats {
@@ -83,6 +150,8 @@ img {
     flex-wrap: nowrap;
     font-size: 0.9em;
     width: 100%;
+    font-family: "Dosis", sans-serif;
+    font-optical-sizing: auto;
 }
 
 .pokemon-details p {
@@ -97,4 +166,5 @@ img {
     border-bottom: 1px solid #ffffff52;
     width: 100%;
     padding-bottom: 5px;
+    color: #000000b5;
 }

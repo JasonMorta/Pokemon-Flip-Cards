@@ -47,9 +47,9 @@ async function fetchPokemon() {
         cardFront.style.backgroundColor = cardColor;
 
         cardFront.innerHTML = `
-            <div class="pokemon-number">#${pokemon.id.toString().padStart(3, '0')}</div>
+            <div class="pokemon-number"><p>#${pokemon.id.toString().padStart(3, '0')}</p></div>
             <img src="${pokemon.sprites.other['official-artwork'].front_default}" alt="${pokemon.name}">
-            <div class="pokemon-name">${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}</div>
+            <div class="pokemon-name"><h3>${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}</h3></div>
         `;
 
         // Create back of the card (stats and other details)

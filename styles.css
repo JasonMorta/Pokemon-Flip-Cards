@@ -13,7 +13,7 @@ body {
 
 .card-outer {
     width: 200px;
-    height: 300px;
+    height: 320px;
     perspective: 1000px;
     margin: 20px;
     position: relative;
@@ -145,6 +145,7 @@ img {
 
 .pokemon-details {
     display: flex;
+    position: relative;
     flex-direction: column;
     align-items: flex-start;
     flex-wrap: nowrap;
@@ -152,6 +153,31 @@ img {
     width: 100%;
     font-family: "Dosis", sans-serif;
     font-optical-sizing: auto;
+    font-size: 0.8em;
+ 
+}
+
+.pokemon-details img {
+    position: absolute;
+    width: auto;
+    right: 0;
+    top: 0;
+    z-index: 0;
+}
+
+.pokemon-stats {
+    position: relative;
+    z-index: 2;
+    text-align: justify;
+    color: #ffffff;
+    text-shadow: 0px 0px 2px rgb(97, 97, 97), 0px 0px 3px black;
+}
+
+.pokemon-type {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 6px;
 }
 
 .pokemon-details p {

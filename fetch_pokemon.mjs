@@ -1,120 +1,73 @@
-// fetch_pokemon.mjs
-
-// Uncomment the following lines if using Node.js version < 18 and after installing node-fetch
-// import fetch from 'node-fetch';
-
+// Import necessary modules
 import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-// Derive __dirname since it's not available in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Define the base PokeAPI URL
+const pokeApiUrl = 'https://pokeapi.co/api/v2/pokemon?limit=10000';
 
-// PokéAPI base URL
-const POKEAPI_BASE_URL = 'https://pokeapi.co/api/v2';
+// Function to get details for a specific Pokemon
+export async function getPokemonDetails(url) {
+  const response = await fetch(url);
+  const pokemon = await response.json();
 
-// Output directory path
-const OUTPUT_DIR = path.join(__dirname, 'types_data');
+  // Extract all sprite links and sound
+  const sprites = pokemon.sprites;
+  const allSprites = {
+    front_default: sprites.front_default,
+    front_shiny: sprites.front_shiny,
+    front_female: sprites.front_female,
+    front_shiny_female: sprites.front_shiny_female,
+    back_default: sprites.back_default,
+    back_shiny: sprites.back_shiny,
+    back_female: sprites.back_female,
+    back_shiny_female: sprites.back_shiny_female,
+    official_artwork: sprites.other['official-artwork'].front_default,  // Official artwork
+    dream_world: sprites.other.dream_world.front_default,  // Dream World artwork
+    home_default: sprites.other.home.front_default,  // Pokémon HOME artwork
+    home_shiny: sprites.other.home.front_shiny,       // Shiny version in Pokémon HOME
+    showdown: sprites.other.showdown.front_default,  // Showdown artwork GIF
+  };
 
-// Function to fetch JSON data with error handling
-async function fetchJSON(url) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status} for URL: ${url}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(`Failed to fetch ${url}: ${error.message}`);
-    throw error;
-  }
+  return {
+    name: pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1),
+    id: pokemon.id,
+    types: pokemon.types.map(typeInfo => typeInfo.type.name),
+    height: pokemon.height / 10,  // Convert decimeters to meters
+    weight: pokemon.weight / 10,  // Convert hectograms to kilograms
+    stats: {
+      hp: pokemon.stats[0].base_stat,
+      attack: pokemon.stats[1].base_stat,
+      defense: pokemon.stats[2].base_stat,
+      'special-attack': pokemon.stats[3].base_stat,
+      'special-defense': pokemon.stats[4].base_stat,
+      speed: pokemon.stats[5].base_stat
+    },
+    abilities: pokemon.abilities.map(abilityInfo => abilityInfo.ability.name),
+    sprites: allSprites,  // Include all available sprite variations
+    sound: `https://pokemoncries.com/cries/${pokemon.id}.mp3`
+  };
 }
 
-// Function to ensure the output directory exists
-async function ensureOutputDir(dirPath) {
+// Main function to fetch and save Pokemon data
+export async function fetchAndSavePokemonData() {
   try {
-    await fs.access(dirPath);
-    // Directory exists
-  } catch (error) {
-    // Directory does not exist, create it
-    await fs.mkdir(dirPath, { recursive: true });
-    console.log(`Created directory: ${dirPath}`);
-  }
-}
+    const response = await fetch(pokeApiUrl);
+    const allPokemon = await response.json();
 
-// Main function to fetch all Pokémon data and categorize by type
-async function fetchAndCategorizePokemon() {
-  try {
-    console.log('Ensuring output directory exists...');
-    await ensureOutputDir(OUTPUT_DIR);
+    const pokemonDetailsList = [];
 
-    console.log('Fetching the total count of Pokémon...');
-
-    // Step 1: Get the total count of Pokémon
-    const initialData = await fetchJSON(`${POKEAPI_BASE_URL}/pokemon?limit=1`);
-    const totalCount = initialData.count;
-    console.log(`Total Pokémon to fetch: ${totalCount}`);
-
-    // Step 2: Fetch the list of all Pokémon names and URLs
-    console.log('Fetching list of all Pokémon...');
-    const listData = await fetchJSON(`${POKEAPI_BASE_URL}/pokemon?limit=${totalCount}`);
-    const pokemonList = listData.results; // Array of { name, url }
-
-    console.log('Fetching detailed data for each Pokémon...');
-
-    // Object to hold types and their corresponding Pokémon
-    const typesData = {};
-
-    // To avoid overwhelming the API, we'll fetch in batches
-    const BATCH_SIZE = 20;
-    for (let i = 0; i < pokemonList.length; i += BATCH_SIZE) {
-      const batch = pokemonList.slice(i, i + BATCH_SIZE);
-      console.log(`Fetching batch ${Math.floor(i / BATCH_SIZE) + 1} (${batch.length} Pokémon)...`);
-
-      // Create an array of fetch promises for the current batch
-      const batchPromises = batch.map(pokemon => fetchJSON(pokemon.url));
-
-      // Wait for all promises in the current batch to resolve
-      const batchData = await Promise.all(batchPromises);
-
-      // Process each Pokémon in the batch
-      batchData.forEach(pokemon => {
-        // Each Pokémon can have multiple types
-        pokemon.types.forEach(typeInfo => {
-          const typeName = typeInfo.type.name;
-
-          // Initialize the array for this type if it doesn't exist
-          if (!typesData[typeName]) {
-            typesData[typeName] = [];
-          }
-
-          // Push the complete Pokémon object to the corresponding type array
-          typesData[typeName].push(pokemon);
-        });
-      });
-
-      // Optional: Delay between batches to be polite to the API
-      await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
+    // Fetching details for each Pokémon
+    for (const pokemon of allPokemon.results) {
+      const pokemonDetails = await getPokemonDetails(pokemon.url);
+      pokemonDetailsList.push(pokemonDetails);
     }
 
-    console.log(`Fetched and categorized data for ${pokemonList.length} Pokémon.`);
-
-    // Step 3: Write each type's data to a separate JSON file
-    console.log(`Writing data to ${OUTPUT_DIR}...`);
-    const writePromises = Object.entries(typesData).map(async ([typeName, pokemons]) => {
-      const filePath = path.join(OUTPUT_DIR, `${typeName}.json`);
-      await fs.writeFile(filePath, JSON.stringify(pokemons, null, 2), 'utf-8');
-      console.log(`Written ${pokemons.length} Pokémon to ${typeName}.json`);
-    });
-
-    await Promise.all(writePromises);
-
-    console.log('All type-specific JSON files have been successfully created!');
+    // Write the details to a JSON file
+    await fs.writeFile('pokemon_data.json', JSON.stringify(pokemonDetailsList, null, 2));
+    console.log('Pokemon data saved to pokemon_data.json');
   } catch (error) {
-    console.error(`An error occurred: ${error.message}`);
+    console.error('Error fetching or saving Pokemon data:', error);
   }
 }
 
-// Execute the main function
-fetchAndCategorizePokemon();
+// Call the main function
+//fetchAndSavePokemonData();

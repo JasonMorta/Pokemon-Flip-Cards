@@ -23,11 +23,9 @@ async function fetchPokemon() {
         flying: '#C0B6D8'
     };
 
-    // Fetch only the first 5 Pokémon
-    for (let i = 1; i <= 9; i++) {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`);
-        const pokemon = await response.json();
-
+    // Create Pokemon Card and details
+    function pokemonCard(pokemon) {
+        console.log('pokemon', pokemon)
         // Create card for each Pokémon
         const cardOuter = document.createElement('div');
         cardOuter.classList.add('card-outer');
@@ -36,8 +34,8 @@ async function fetchPokemon() {
         pokemonCard.classList.add('pokemon-card');
 
         // Extract the Pokémon's type and get its color
-        const pokemonType = pokemon.types[0].type.name;
-        const cardColor = typeColors[pokemonType] || '#f9f9f9'; // Default color if type is not in the map
+        const pokemonType = pokemon.types.map(typeInfo => typeInfo);
+        const cardColor = typeColors[pokemonType[0]] || '#f9f9f9'; // Default color if type is not in the map
 
         // Create front of the card
         const cardFront = document.createElement('div');
@@ -48,7 +46,7 @@ async function fetchPokemon() {
 
         cardFront.innerHTML = `
             <div class="pokemon-number"><p>#${pokemon.id.toString().padStart(3, '0')}</p></div>
-            <img src="${pokemon.sprites.other['official-artwork'].front_default}" alt="${pokemon.name}">
+            <img src="${pokemon.sprites.official_artwork}" alt="${pokemon.name}">
             <div class="pokemon-name"><h3>${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}</h3></div>
         `;
 
@@ -62,24 +60,47 @@ async function fetchPokemon() {
         // Extract additional Pokémon details
         const height = (pokemon.height / 10).toFixed(1); // Convert height to meters
         const weight = (pokemon.weight / 10).toFixed(1); // Convert weight to kilograms
-        const abilities = pokemon.abilities.map(ability => ability.ability.name).join(', '); // Get list of abilities
-        const stats = pokemon.stats.map(stat => `<p>${stat.stat.name}: ${stat.base_stat}</p>`).join('');
+        const abilities = pokemon.abilities.map(ability => ability); // Get list of abilities
+        const stats = `
+            <p>HP: ${pokemon.stats.hp}</p>
+            <p>Attack: ${pokemon.stats.attack}</p>
+            <p>Defense: ${pokemon.stats.defense}</p>
+            <p>Special-Attack: ${pokemon.stats['special-attack']}</p>
+            <p>Special-Defense: ${pokemon.stats['special-defense']}</p>
+            <p>Speed: ${pokemon.stats.speed}</p>
+        `
 
         cardBack.innerHTML = `
             <div class="pokemon-details">
                 <section>
-                    <h4>Stats</h4>
-                    ${stats}
+                    <img src="${pokemon.sprites.showdown}" alt="${pokemon.showdown}">
+                    <div class="pokemon-stats">
+                        <h4>Stats</h4>
+                        ${stats}
+                    </div>
                 </section>
                 <section>
-                    <h4>Details</h4>
-                    <p>Height: ${height} m</p>
-                    <p>Weight: ${weight} kg</p>
+                    <div class="pokemon-stats">
+                        <h4>Details</h4>
+                        <p>Height: ${height} m</p>
+                        <p>Weight: ${weight} kg</p>
+                    </div>
                 </section>
                <section>
-                    <h4>Abilities</h4>
-                    <p>${abilities}</p>
+                   <div class="pokemon-stats">
+                        <h4>Abilities</h4>
+                        <div class="pokemon-type">
+                        ${abilities.map(a => `<p>${a.charAt(0).toUpperCase() + a.slice(1)}</p>`).join('')}
+                       </div>
+                   </div>
                </section>
+               <section>
+                     <div class="pokemon-stats">
+                            <h4>Type</h4>
+                            <div class="pokemon-type">
+                                ${pokemonType.map(type => `<p>${type.charAt(0).toUpperCase() + type.slice(1)}</p>`).join('')}
+                            </div>
+                     </div>
             </div>
         `;
 
@@ -93,12 +114,39 @@ async function fetchPokemon() {
         cardOuter.addEventListener('click', () => {
             pokemonCard.classList.add('flip-card'); // Flip on click
         });
+        
 
         // Add mouse leave event to flip the card back to front
         cardOuter.addEventListener('mouseleave', () => {
             pokemonCard.classList.remove('flip-card'); // Flip back on mouse leave
         });
     }
+
+    // React .json file, if no file found fetch from API
+    const response = await fetch('./pokemon_data.json');
+    const pokemonData = await response.json();
+    console.log('pokemonData', pokemonData)
+
+    if (pokemonData.length > 0) {
+        for (let i = 0; i < 100; i++) {
+            pokemonCard(pokemonData[i])
+        }
+    } else {
+        PokeAPI_Call(response)
+    }
+
+
+
+    // Fetch only the first 9 Pokémon form API
+    async function PokeAPI_Call() {
+        for (let i = 1; i <= 9; i++) {
+            const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${i}`);
+            const pokemon = await response.json();
+            console.log('pokemon', pokemon)
+            pokemonCard(pokemon)
+        }
+    }
+
 }
 
 fetchPokemon();

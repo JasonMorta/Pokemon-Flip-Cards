@@ -62,7 +62,7 @@ export async function fetchAndSavePokemonData() {
     }
 
     // Write the details to a JSON file
-    await fs.writeFile('pokemon_data.json', JSON.stringify(pokemonDetailsList, null, 2));
+    await fs.writeFile('pokemons.json', JSON.stringify(pokemonDetailsList, null, 2));
     console.log('Pokemon data saved to pokemon_data.json');
   } catch (error) {
     console.error('Error fetching or saving Pokemon data:', error);

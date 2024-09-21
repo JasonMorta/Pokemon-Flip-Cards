@@ -123,7 +123,7 @@ async function fetchPokemon() {
     }
 
     // React .json file, if no file found fetch from API
-    const response = await fetch('./pokemon_data.json');
+    const response = await fetch('./pokemons.json');
     const pokemonData = await response.json();
     console.log('pokemonData', pokemonData)
 
